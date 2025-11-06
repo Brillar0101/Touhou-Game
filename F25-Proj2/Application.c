@@ -18,6 +18,15 @@ Application Application_construct() {
     app.titleTimer = SWTimer_construct(3000);
     app.timerStarted = false;
 
+    // Begin with Menu Screen
+    app.menuSelection = 0;
+
+    // Initiliazing the high score to zero
+    int i;
+    for (i = 0; i < 5; i++) {
+        app.highScores[i] = 0;
+    }
+
     return app;
 }
 
@@ -84,6 +93,51 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
                 // Redrawing the menu screen with updated cursors
                 drawMenuScreen(g_sContext_p, app->menuSelection);
             }
+
+            // JSB : Selecting the current option
+
+            if (Button_isTapped(&hal->boosterpackJS)) {
+                if (app->menuSelection == 0) {
+                }
+                else if (app->menuSelection == 1) {  // Instruction Select
+
+                    app->currentScreen = INSTRUCTIONS_SCREEN;
+                    app->firstCall = true;
+                }
+                else if (app->menuSelection == 2) {  // High Score Select
+
+                    app->currentScreen = HIGH_SCORES_SCREEN;
+                    app->firstCall = true;
+                }
+            }
+        }
+
+        // Logic for instruction screen
+        else if (app->currentScreen == INSTRUCTIONS_SCREEN) {
+
+            if (app->firstCall) {
+                drawInstructionsScreen(g_sContext_p);
+                app->firstCall = false;
+            }
+
+            if (Button_isTapped(&hal->boosterpackS2)) {  // Return to Menu
+                app->currentScreen = MENU_SCREEN;
+                app->firstCall = true;
+            }
+        }
+
+        // Logic for high scores screen
+        else if (app->currentScreen == HIGH_SCORES_SCREEN) {
+
+            if (app->firstCall) {
+                drawHighScoresScreen(g_sContext_p, app);
+                app->firstCall = false;
+            }
+
+            if (Button_isTapped(&hal->boosterpackS2)) {  // Return to Menu
+                app->currentScreen = MENU_SCREEN;
+                app->firstCall = true;
+            }
         }
 }
 
@@ -136,4 +190,52 @@ void drawMenuScreen(Graphics_Context* g_sContext_p,int selection) {
     } else {
         Graphics_drawString(g_sContext_p, (int8_t*)"  High Scores", -1, 10, 70, true);
     }
+}
+
+
+// Drawing instructions screen
+void drawInstructionsScreen(Graphics_Context* g_sContext_p) {
+    Graphics_clearDisplay(g_sContext_p);
+    Graphics_setFont(g_sContext_p, &g_sFontCmtt12);
+
+    // Title of the screen
+    Graphics_drawString(g_sContext_p, (int8_t*)"Instructions", -1, 20, 5, true);
+
+    // Game instructions
+    Graphics_drawString(g_sContext_p, (int8_t*)"Move character", -1, 5, 25, true);
+    Graphics_drawString(g_sContext_p, (int8_t*)"to avoid being", -1, 5, 37, true);
+    Graphics_drawString(g_sContext_p, (int8_t*)"hit by bullets.", -1, 5, 49, true);
+
+    Graphics_drawString(g_sContext_p, (int8_t*)"Press BB1 to", -1, 5, 61, true);
+    Graphics_drawString(g_sContext_p, (int8_t*)"fire at enemy.", -1, 5, 73, true);
+
+    Graphics_drawString(g_sContext_p, (int8_t*)"First one to", -1, 5, 85, true);
+    Graphics_drawString(g_sContext_p, (int8_t*)"run out loses.", -1, 5, 97, true);
+
+    // Navigation instructions
+    Graphics_drawString(g_sContext_p, (int8_t*)"BB2: Go Back", -1, 8, 115, true);
+}
+
+
+// Drawing high scores screen
+void drawHighScoresScreen(Graphics_Context* g_sContext_p, Application* app_p) {
+    Graphics_clearDisplay(g_sContext_p);
+    Graphics_setFont(g_sContext_p, &g_sFontCmtt12);
+
+    // Title of the screen
+    Graphics_drawString(g_sContext_p, (int8_t*)"High Scores", -1, 25, 10, true);
+
+    // Displaying 5 scores
+    char scoreStr[20];
+    int i;
+    int yPos = 35;
+
+    for (i = 0; i < 5; i++) {
+        sprintf(scoreStr, "%d. %d", i + 1, app_p->highScores[i]);
+        Graphics_drawString(g_sContext_p, (int8_t*)scoreStr, -1, 40, yPos, true);
+        yPos += 15;
+    }
+
+    // Navigation instruction
+    Graphics_drawString(g_sContext_p, (int8_t*)"BB2: Go Back", -1, 8, 118, true);
 }
