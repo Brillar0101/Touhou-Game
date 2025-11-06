@@ -5,6 +5,15 @@
  */
 
 #include <Application.h>
+#include <stdio.h>
+
+// Constants for the game
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 128
+#define MARGIN_LEFT 20
+#define MARGIN_RIGHT 20
+#define PLAYER_SIZE 8
+#define PLAYER_STARTING_HEALTH 100
 
 // Set initial values
 Application Application_construct() {
@@ -26,6 +35,14 @@ Application Application_construct() {
     for (i = 0; i < 5; i++) {
         app.highScores[i] = 0;
     }
+
+    // Initializing game variables
+    app.gameTime = 0;
+
+    // Initializing the player
+    app.player.x = SCREEN_WIDTH / 2;
+    app.player.y = SCREEN_HEIGHT - 30;
+    app.player.health = PLAYER_STARTING_HEALTH;
 
     return app;
 }
@@ -98,6 +115,11 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
 
             if (Button_isTapped(&hal->boosterpackJS)) {
                 if (app->menuSelection == 0) {
+
+                    initializeGame(app);
+                    app->currentScreen = GAME_SCREEN;
+                    app->firstCall = true;
+
                 }
                 else if (app->menuSelection == 1) {  // Instruction Select
 
@@ -139,6 +161,71 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
                 app->firstCall = true;
             }
         }
+
+        // Logic for game screen
+
+        else if (app->currentScreen == GAME_SCREEN) {
+
+            if (app->firstCall) {
+                drawGameScreen(g_sContext_p, app);
+                app->firstCall = false;
+            }
+
+            // Mowement with buttons but will be changed later
+            int joystickX = 0;
+            int joystickY = 0;
+
+            // BB1 : Move up
+            if (Button_isPressed(&hal->boosterpackS1)) {
+                joystickY = -1;
+            }
+
+            // BB2 : Move down
+            if (Button_isPressed(&hal->boosterpackS2)) {
+                joystickY = 1;
+            }
+
+            // Updating player position if the buttons are pressed
+            if (joystickX != 0 || joystickY != 0) {
+                updatePlayerPosition(&app->player, joystickX, joystickY);
+                drawGameScreen(g_sContext_p, app);
+            }
+        }
+}
+
+
+// Initializing the game when it starts
+
+void initializeGame(Application* app) {
+    // Resets player position
+    app->player.x = SCREEN_WIDTH / 2;
+    app->player.y = SCREEN_HEIGHT - 30;
+    app->player.health = PLAYER_STARTING_HEALTH;
+
+    // Resets game
+    app->gameTime = 0;
+}
+
+void updatePlayerPosition(Player* player, int joystickX, int joystickY) {
+    // Player's moving speed
+    player->x += joystickX * 2;
+    player->y += joystickY * 2;
+
+    // Keeps the player within x-axis margins
+    if (player->x < MARGIN_LEFT + PLAYER_SIZE) {
+        player->x = MARGIN_LEFT + PLAYER_SIZE;
+    }
+    if (player->x > SCREEN_WIDTH - MARGIN_RIGHT - PLAYER_SIZE) {
+        player->x = SCREEN_WIDTH - MARGIN_RIGHT - PLAYER_SIZE;
+    }
+
+    // Keeps the player within the y-axis margins
+    if (player->y < PLAYER_SIZE) {
+        player->y = PLAYER_SIZE;
+    }
+    if (player->y > SCREEN_HEIGHT - PLAYER_SIZE) {
+        player->y = SCREEN_HEIGHT - PLAYER_SIZE;
+    }
 }
 
 // Drawing the title screen
@@ -238,4 +325,27 @@ void drawHighScoresScreen(Graphics_Context* g_sContext_p, Application* app_p) {
 
     // Navigation instruction
     Graphics_drawString(g_sContext_p, (int8_t*)"BB2: Go Back", -1, 8, 118, true);
+}
+
+
+// Drawing the game screen
+
+void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
+    Graphics_clearDisplay(g_sContext_p);
+
+    Graphics_setFont(g_sContext_p, &g_sFontCmtt12);
+    Graphics_drawString(g_sContext_p, (int8_t*)"Game", -1, 45, 5, true);
+
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
+    Graphics_fillCircle(g_sContext_p, app_p->player.x, app_p->player.y, PLAYER_SIZE);
+
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
+    Graphics_drawCircle(g_sContext_p, 15, 113, 12);
+
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
+    char healthStr[10];
+    sprintf(healthStr, "%d", app_p->player.health);
+    Graphics_drawString(g_sContext_p, (int8_t*)healthStr, -1, 8, 108, true);
+
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
 }

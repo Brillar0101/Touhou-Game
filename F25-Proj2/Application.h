@@ -24,10 +24,19 @@ enum _ScreenState {
     TITLE_SCREEN,
     MENU_SCREEN,
     INSTRUCTIONS_SCREEN,
-    HIGH_SCORES_SCREEN
+    HIGH_SCORES_SCREEN,
+    GAME_SCREEN
 
 };
 typedef enum _ScreenState ScreenState;
+
+// Player struct
+struct _Player {
+    int x;
+    int y;
+    int health;
+};
+typedef struct _Player Player;
 
 
 // Struct showing what is show on the screen
@@ -39,6 +48,9 @@ struct _Application {
     bool timerStarted;           // Timer started yet ?
     int menuSelection;           // Menu selection
     int highScores[5];
+
+    Player player;
+    int gameTime;
 };
 typedef struct _Application Application;
 
@@ -53,5 +65,10 @@ void drawTitleScreen(Graphics_Context* g_sContext_p);
 void drawMenuScreen(Graphics_Context* g_sContext_p, int selection);
 void drawInstructionsScreen(Graphics_Context* g_sContext_p);
 void drawHighScoresScreen(Graphics_Context* g_sContext_p, Application* app_p);
+void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p);
+
+// Game Helper functions
+void initializeGame(Application* app);
+void updatePlayerPosition(Player* player, int joystickX, int joystickY);
 
 #endif /* APPLICATION_H_ */
