@@ -7,6 +7,7 @@
  * Implemented features so far
  *       - Title Screen
  *       - Auto transition after 3 seconds
+ *       - Cursor Movement with wrapping
  *
  */
 
@@ -33,6 +34,7 @@ struct _Application {
     bool firstCall;              // First time drawing on screen ?
     SWTimer titleTimer;          // 3 sec timer
     bool timerStarted;           // Timer started yet ?
+    int menuSelection;           // Menu selection
 };
 typedef struct _Application Application;
 
@@ -44,6 +46,6 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
 
 // Drawing functions
 void drawTitleScreen(Graphics_Context* g_sContext_p);
-void drawMenuScreen(Graphics_Context* g_sContext_p);
+void drawMenuScreen(Graphics_Context* g_sContext_p, int selection);
 
 #endif /* APPLICATION_H_ */

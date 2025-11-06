@@ -53,16 +53,41 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
 
             // Drawing the menu on the first call
             if (app->firstCall) {
-                drawMenuScreen(g_sContext_p);
+                drawMenuScreen(g_sContext_p, app->menuSelection);
                 app->firstCall = false;
             }
 
-            // Going to add buttons functionality later
+            // BB1 : Move Down
+
+            if (Button_isTapped(&hal->boosterpackS1)) {
+                app->menuSelection--;
+
+                // Wrap around: 0 then 2
+                if (app->menuSelection < 0) {
+                    app->menuSelection = 2;
+                }
+
+                // Redrawing menu screen with updated cursors
+                drawMenuScreen(g_sContext_p, app->menuSelection);
+            }
+
+            // BB2 : Move up
+
+            if (Button_isTapped(&hal->boosterpackS2)) {
+                app->menuSelection++;
+
+                // Wrap around: 2 then zero
+                if (app->menuSelection > 2) {
+                    app->menuSelection = 0;
+                }
+
+                // Redrawing the menu screen with updated cursors
+                drawMenuScreen(g_sContext_p, app->menuSelection);
+            }
         }
 }
 
 // Drawing the title screen
-
 void drawTitleScreen(Graphics_Context* g_sContext_p) {
     // Clearing the screen
     Graphics_clearDisplay(g_sContext_p);
@@ -81,7 +106,7 @@ void drawTitleScreen(Graphics_Context* g_sContext_p) {
 
 
 // Drawing the menu screen
-void drawMenuScreen(Graphics_Context* g_sContext_p) {
+void drawMenuScreen(Graphics_Context* g_sContext_p,int selection) {
     // Clearing the screen
     Graphics_clearDisplay(g_sContext_p);
 
@@ -91,8 +116,24 @@ void drawMenuScreen(Graphics_Context* g_sContext_p) {
     // Drawing menu title
     Graphics_drawString(g_sContext_p, (int8_t*)"MENU", -1, 45, 10, true);
 
-    // Drawing menu options with curosr on the first option ( Will fix this later)
-    Graphics_drawString(g_sContext_p, (int8_t*)"> Play", -1, 10, 40, true);
-    Graphics_drawString(g_sContext_p, (int8_t*)"  Instructions", -1, 10, 55, true);
-    Graphics_drawString(g_sContext_p, (int8_t*)"  High Scores", -1, 10, 70, true);
+    //"Play" with or without cursor
+    if (selection == 0) {
+        Graphics_drawString(g_sContext_p, (int8_t*)"> Play", -1, 10, 40, true);
+    } else {
+        Graphics_drawString(g_sContext_p, (int8_t*)"  Play", -1, 10, 40, true);
+    }
+
+    //"Instructions" with or without cursor
+    if (selection == 1) {
+        Graphics_drawString(g_sContext_p, (int8_t*)"> Instructions", -1, 10, 55, true);
+    } else {
+        Graphics_drawString(g_sContext_p, (int8_t*)"  Instructions", -1, 10, 55, true);
+    }
+
+    //"High Scores" with or without cursor
+    if (selection == 2) {
+        Graphics_drawString(g_sContext_p, (int8_t*)"> High Scores", -1, 10, 70, true);
+    } else {
+        Graphics_drawString(g_sContext_p, (int8_t*)"  High Scores", -1, 10, 70, true);
+    }
 }
