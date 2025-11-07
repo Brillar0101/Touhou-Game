@@ -30,11 +30,20 @@ enum _ScreenState {
 };
 typedef enum _ScreenState ScreenState;
 
+// Bullet Struct
+struct _Bullet {
+    int x;
+    int y;
+    bool active;
+};
+typedef struct _Bullet Bullet;
+
 // Player struct
 struct _Player {
     int x;
     int y;
     int health;
+    Bullet bullet;
 };
 typedef struct _Player Player;
 

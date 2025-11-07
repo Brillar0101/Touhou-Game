@@ -14,6 +14,8 @@
 #define MARGIN_RIGHT 20
 #define PLAYER_SIZE 8
 #define PLAYER_STARTING_HEALTH 100
+#define BULLET_SIZE 2
+#define BULLET_SPEED 3
 
 // Set initial values
 Application Application_construct() {
@@ -171,25 +173,41 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
                 app->firstCall = false;
             }
 
-            // Mowement with buttons but will be changed later
+            // Movement with buttons only
             int joystickX = 0;
             int joystickY = 0;
 
-            // BB1 : Move up
-            if (Button_isPressed(&hal->boosterpackS1)) {
-                joystickY = -1;
-            }
-
-            // BB2 : Move down
             if (Button_isPressed(&hal->boosterpackS2)) {
                 joystickY = 1;
             }
 
-            // Updating player position if the buttons are pressed
+            // Updating the position of the player
             if (joystickX != 0 || joystickY != 0) {
                 updatePlayerPosition(&app->player, joystickX, joystickY);
-                drawGameScreen(g_sContext_p, app);
             }
+
+            // BB1 - Firing a bullet if a bullet is not active
+            if (Button_isTapped(&hal->boosterpackS1)) {
+                if (!app->player.bullet.active) {
+                    // Firing a new bullet
+                    app->player.bullet.active = true;
+                    app->player.bullet.x = app->player.x;
+                    app->player.bullet.y = app->player.y - PLAYER_SIZE;
+                }
+            }
+
+            // Updates the bullet position
+            if (app->player.bullet.active) {
+                app->player.bullet.y -= BULLET_SPEED;
+
+                // Deactivates if bullet goes off the screen
+                if (app->player.bullet.y < 0) {
+                    app->player.bullet.active = false;
+                }
+            }
+
+            // Redraw the screen again
+            drawGameScreen(g_sContext_p, app);
         }
 }
 
@@ -201,6 +219,10 @@ void initializeGame(Application* app) {
     app->player.x = SCREEN_WIDTH / 2;
     app->player.y = SCREEN_HEIGHT - 30;
     app->player.health = PLAYER_STARTING_HEALTH;
+
+    app->player.bullet.active = false;
+    app->player.bullet.x = 0;
+    app->player.bullet.y = 0;
 
     // Resets game
     app->gameTime = 0;
@@ -338,6 +360,19 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
 
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
     Graphics_fillCircle(g_sContext_p, app_p->player.x, app_p->player.y, PLAYER_SIZE);
+
+    // Draws a bullet if active
+
+    if (app_p->player.bullet.active) {
+        Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_CYAN);
+        Graphics_fillCircle(g_sContext_p, app_p->player.bullet.x,
+                           app_p->player.bullet.y, BULLET_SIZE);
+    }
+
+    // Draws a health circle
+
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
+    Graphics_drawCircle(g_sContext_p, 15, 113, 12);
 
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
     Graphics_drawCircle(g_sContext_p, 15, 113, 12);
