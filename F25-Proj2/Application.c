@@ -374,9 +374,6 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
     Graphics_drawCircle(g_sContext_p, 15, 113, 12);
 
-    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
-    Graphics_drawCircle(g_sContext_p, 15, 113, 12);
-
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
     char healthStr[10];
     sprintf(healthStr, "%d", app_p->player.health);
