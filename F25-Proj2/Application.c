@@ -18,6 +18,7 @@
 #define BULLET_SPEED 3
 #define ENEMY_SIZE 10
 #define ENEMY_STARTING_HEALTH 500
+#define PLAYER_DAMAGE 5
 
 // Set initial values
 Application Application_construct() {
@@ -219,6 +220,18 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
                 }
             }
 
+            // Checks collision with the enemy
+            if (checkBulletEnemyCollision(&app->player.bullet, &app->enemy)) {
+                // Hits and damage the enemy then deactivates bullet
+                app->enemy.health -= PLAYER_DAMAGE;
+                app->player.bullet.active = false;
+
+                // Prevents negative health
+                if (app->enemy.health < 0) {
+                    app->enemy.health = 0;
+                }
+            }
+
             // Redraw the screen again
             drawGameScreen(g_sContext_p, app);
         }
@@ -278,6 +291,23 @@ void drawTitleScreen(Graphics_Context* g_sContext_p) {
 
     // The name of the student
     Graphics_drawString(g_sContext_p, (int8_t*)"Baraka Lawuo", -1, 20, 95, true);
+}
+
+// Enemy health decreases
+bool checkBulletEnemyCollision(Bullet* bullet, Enemy* enemy) {
+    if (!bullet->active) {
+        return false;
+    }
+
+    // Calculates distance between bullet and enemy
+    int dx = bullet->x - enemy->x;
+    int dy = bullet->y - enemy->y;
+    int distanceSquared = dx * dx + dy * dy;
+
+    // Hits enemy only if the distance is less than bullet + enemy size
+    int hitRange = BULLET_SIZE + ENEMY_SIZE;
+
+    return (distanceSquared < hitRange * hitRange);
 }
 
 

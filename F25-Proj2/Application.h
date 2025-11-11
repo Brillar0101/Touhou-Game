@@ -90,5 +90,6 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p);
 // Game Helper functions
 void initializeGame(Application* app);
 void updatePlayerPosition(Player* player, int joystickX, int joystickY);
+bool checkBulletEnemyCollision(Bullet* bullet, Enemy* enemy);
 
 #endif /* APPLICATION_H_ */
