@@ -110,5 +110,6 @@ bool checkBulletEnemyCollision(Bullet* bullet, Enemy* enemy);
 void initEnemyBullets(EnemyBulletSystem* system);
 void updateEnemyBullets(Application* app);
 void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy);
+bool checkEnemyBulletPlayerCollision(Bullet* bullet, Player* player);
 
 #endif /* APPLICATION_H_ */

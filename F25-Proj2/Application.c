@@ -19,12 +19,13 @@
 #define ENEMY_SIZE 10
 #define ENEMY_STARTING_HEALTH 500
 #define PLAYER_DAMAGE 5
+#define ENEMY_DAMAGE 5
 
 
 
 #define ENEMY_BULLET_SPEED 2
 #define PATTERN_SWITCH_TIME 5000
-#define BULLET_SPAWN_TIME 500
+#define BULLET_SPAWN_TIME 1000
 
 // Set initial values
 Application Application_construct() {
@@ -547,6 +548,17 @@ void updateEnemyBullets(Application* app) {
                 app->enemyBullets.bullets[i].x += ENEMY_BULLET_SPEED;
             }
 
+            if (checkEnemyBulletPlayerCollision(&app->enemyBullets.bullets[i], &app->player)) {
+                // Hit player
+                app->player.health -= ENEMY_DAMAGE;
+                app->enemyBullets.bullets[i].active = false;
+
+                // Health always greater than zero
+                if (app->player.health < 0) {
+                    app->player.health = 0;
+                }
+            }
+
             // Deactivates bullet if off the screen
             if (app->enemyBullets.bullets[i].y > SCREEN_HEIGHT ||
                 app->enemyBullets.bullets[i].x > SCREEN_WIDTH) {
@@ -554,4 +566,24 @@ void updateEnemyBullets(Application* app) {
             }
         }
     }
+}
+
+
+// Checks if the enemy hits the player
+bool checkEnemyBulletPlayerCollision(Bullet* bullet, Player* player) {
+
+    // checks only if bullet is active
+    if (!bullet->active) {
+        return false;
+    }
+
+    // Calculate distance between bullet and player
+    int dx = bullet->x - player->x;
+    int dy = bullet->y - player->y;
+    int distanceSquared = dx * dx + dy * dy;
+
+    // Bullet hits the player
+    int hitRange = BULLET_SIZE + PLAYER_SIZE;
+
+    return (distanceSquared < hitRange * hitRange);
 }
