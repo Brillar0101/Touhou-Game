@@ -20,6 +20,12 @@
 #define ENEMY_STARTING_HEALTH 500
 #define PLAYER_DAMAGE 5
 
+
+
+#define ENEMY_BULLET_SPEED 2
+#define PATTERN_SWITCH_TIME 5000
+#define BULLET_SPAWN_TIME 500
+
 // Set initial values
 Application Application_construct() {
     Application app;
@@ -58,6 +64,9 @@ Application Application_construct() {
     app.enemy.x = SCREEN_WIDTH / 2;
     app.enemy.y = 25;
     app.enemy.health = ENEMY_STARTING_HEALTH;
+
+    // Initializing enemy bullet system
+    initEnemyBullets(&app.enemyBullets);
 
 
     return app;
@@ -232,6 +241,9 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
                 }
             }
 
+            //Updates enemy bullets
+            updateEnemyBullets(app);
+
             // Redraw the screen again
             drawGameScreen(g_sContext_p, app);
         }
@@ -245,6 +257,8 @@ void initializeGame(Application* app) {
     app->player.x = SCREEN_WIDTH / 2;
     app->player.y = SCREEN_HEIGHT - 30;
     app->player.health = PLAYER_STARTING_HEALTH;
+
+    initEnemyBullets(&app->enemyBullets);
 
     app->player.bullet.active = false;
     app->player.bullet.x = 0;
@@ -423,6 +437,19 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
                            app_p->player.bullet.y, BULLET_SIZE);
     }
 
+    // Draws enemy's bullet
+
+    int i;
+    for (i = 0; i < MAX_ENEMY_BULLETS; i++) {
+        if (app_p->enemyBullets.bullets[i].active) {
+            Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_RED);
+            Graphics_fillCircle(g_sContext_p,
+                               app_p->enemyBullets.bullets[i].x,
+                               app_p->enemyBullets.bullets[i].y,
+                               BULLET_SIZE);
+        }
+    }
+
     // Draws a health circle
 
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
@@ -444,4 +471,87 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
 
     // Resets the color
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
+}
+
+
+// ADD THIS ENTIRE FUNCTION:
+// Initialize enemy bullet system
+void initEnemyBullets(EnemyBulletSystem* system) {
+    int i;
+    for (i = 0; i < MAX_ENEMY_BULLETS; i++) {
+        system->bullets[i].active = false;
+        system->bullets[i].x = 0;
+        system->bullets[i].y = 0;
+    }
+
+    system->currentPattern = 0;
+    system->patternTimer = SWTimer_construct(PATTERN_SWITCH_TIME);
+    system->spawnTimer = SWTimer_construct(BULLET_SPAWN_TIME);
+
+    SWTimer_start(&system->patternTimer);
+    SWTimer_start(&system->spawnTimer);
+}
+
+// ADD THIS ENTIRE FUNCTION:
+// Spawn a new enemy bullet
+void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy) {
+    // Find an inactive bullet slot
+    int i;
+    for (i = 0; i < MAX_ENEMY_BULLETS; i++) {
+        if (!system->bullets[i].active) {
+            system->bullets[i].active = true;
+
+            // Pattern 0: Vertical (straight down from enemy)
+            if (system->currentPattern == 0) {
+                system->bullets[i].x = enemy->x;
+                system->bullets[i].y = enemy->y + ENEMY_SIZE;
+            }
+            // Pattern 1: Horizontal (spawn from left side)
+            else {
+                system->bullets[i].x = MARGIN_LEFT;
+                system->bullets[i].y = enemy->y + 20 + (i * 10);  // Spread across screen
+            }
+
+            break;  // Only spawn one bullet
+        }
+    }
+}
+
+// ADD THIS ENTIRE FUNCTION:
+// Update all enemy bullets
+void updateEnemyBullets(Application* app) {
+    // Check if it's time to switch patterns
+    if (SWTimer_expired(&app->enemyBullets.patternTimer)) {
+        // Switch pattern (0 -> 1 or 1 -> 0)
+        app->enemyBullets.currentPattern = (app->enemyBullets.currentPattern + 1) % 2;
+        SWTimer_start(&app->enemyBullets.patternTimer);
+    }
+
+    // Check if it's time to spawn a new bullet
+    if (SWTimer_expired(&app->enemyBullets.spawnTimer)) {
+        spawnEnemyBullet(&app->enemyBullets, &app->enemy);
+        SWTimer_start(&app->enemyBullets.spawnTimer);
+    }
+
+    // Update all active bullets
+    int i;
+    for (i = 0; i < MAX_ENEMY_BULLETS; i++) {
+        if (app->enemyBullets.bullets[i].active) {
+
+            // Pattern 0: Move down
+            if (app->enemyBullets.currentPattern == 0) {
+                app->enemyBullets.bullets[i].y += ENEMY_BULLET_SPEED;
+            }
+            // Pattern 1: Move right
+            else {
+                app->enemyBullets.bullets[i].x += ENEMY_BULLET_SPEED;
+            }
+
+            // Deactivate if off screen
+            if (app->enemyBullets.bullets[i].y > SCREEN_HEIGHT ||
+                app->enemyBullets.bullets[i].x > SCREEN_WIDTH) {
+                app->enemyBullets.bullets[i].active = false;
+            }
+        }
+    }
 }

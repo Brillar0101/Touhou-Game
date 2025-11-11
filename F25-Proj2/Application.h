@@ -21,6 +21,8 @@
 #include <ti/grlib/grlib.h>
 #include <HAL/Timer.h>
 
+#define MAX_ENEMY_BULLETS 10
+
 // Enum for screen states
 enum _ScreenState {
     TITLE_SCREEN,
@@ -39,6 +41,16 @@ struct _Bullet {
     bool active;
 };
 typedef struct _Bullet Bullet;
+
+// Enemy Bullet Struct
+
+struct _EnemyBulletSystem {
+    Bullet bullets[MAX_ENEMY_BULLETS];
+    int currentPattern;
+    SWTimer patternTimer;
+    SWTimer spawnTimer;
+};
+typedef struct _EnemyBulletSystem EnemyBulletSystem;
 
 // Player struct
 struct _Player {
@@ -71,6 +83,7 @@ struct _Application {
     Player player;
     int gameTime;
     Enemy enemy;
+    EnemyBulletSystem enemyBullets;
 };
 typedef struct _Application Application;
 
@@ -90,6 +103,11 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p);
 // Game Helper functions
 void initializeGame(Application* app);
 void updatePlayerPosition(Player* player, int joystickX, int joystickY);
+
+       // Enemy bullet system
 bool checkBulletEnemyCollision(Bullet* bullet, Enemy* enemy);
+void initEnemyBullets(EnemyBulletSystem* system);
+void updateEnemyBullets(Application* app);
+void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy);
 
 #endif /* APPLICATION_H_ */
