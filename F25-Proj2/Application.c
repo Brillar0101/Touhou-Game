@@ -20,9 +20,6 @@
 #define ENEMY_STARTING_HEALTH 500
 #define PLAYER_DAMAGE 5
 #define ENEMY_DAMAGE 5
-
-
-
 #define ENEMY_BULLET_SPEED 2
 #define PATTERN_SWITCH_TIME 5000
 #define BULLET_SPAWN_TIME 1000
@@ -67,6 +64,9 @@ Application Application_construct() {
     app.enemy.health = ENEMY_STARTING_HEALTH;
 
     // Initializing enemy bullet system
+    initEnemyBullets(&app.enemyBullets);
+
+    // Intializing a timer
     initEnemyBullets(&app.enemyBullets);
 
 
@@ -197,6 +197,9 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
                 app->firstCall = false;
             }
 
+            //Increment game time
+            app->gameTime++;
+
             // Movement with buttons only
             int joystickX = 0;
             int joystickY = 0;
@@ -259,14 +262,19 @@ void initializeGame(Application* app) {
     app->player.y = SCREEN_HEIGHT - 30;
     app->player.health = PLAYER_STARTING_HEALTH;
 
-    initEnemyBullets(&app->enemyBullets);
+    // Resets game
+    app->gameTime = 0;
 
     app->player.bullet.active = false;
     app->player.bullet.x = 0;
     app->player.bullet.y = 0;
 
-    // Resets game
-    app->gameTime = 0;
+    app->enemy.x = SCREEN_WIDTH / 2;
+    app->enemy.y = 25;
+    app->enemy.health = ENEMY_STARTING_HEALTH;
+
+    initEnemyBullets(&app->enemyBullets);
+
 }
 
 void updatePlayerPosition(Player* player, int joystickX, int joystickY) {
@@ -414,7 +422,11 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
     Graphics_clearDisplay(g_sContext_p);
 
     Graphics_setFont(g_sContext_p, &g_sFontCmtt12);
-    Graphics_drawString(g_sContext_p, (int8_t*)"Game", -1, 45, 5, true);
+
+    //Draws timer
+    char timeStr[20];
+    sprintf(timeStr, "Time: %d", app_p->gameTime / 100);
+    Graphics_drawString(g_sContext_p, (int8_t*)timeStr, -1, 5, 5, true);
 
     // Draws the player
 
