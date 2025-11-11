@@ -16,6 +16,8 @@
 #define PLAYER_STARTING_HEALTH 100
 #define BULLET_SIZE 2
 #define BULLET_SPEED 3
+#define ENEMY_SIZE 10
+#define ENEMY_STARTING_HEALTH 500
 
 // Set initial values
 Application Application_construct() {
@@ -45,6 +47,17 @@ Application Application_construct() {
     app.player.x = SCREEN_WIDTH / 2;
     app.player.y = SCREEN_HEIGHT - 30;
     app.player.health = PLAYER_STARTING_HEALTH;
+
+    // Initializing the bullet position
+    app.player.bullet.active = false;
+    app.player.bullet.x = 0;
+    app.player.bullet.y = 0;
+
+    // Initializing the enemy
+    app.enemy.x = SCREEN_WIDTH / 2;
+    app.enemy.y = 25;
+    app.enemy.health = ENEMY_STARTING_HEALTH;
+
 
     return app;
 }
@@ -358,8 +371,19 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
     Graphics_setFont(g_sContext_p, &g_sFontCmtt12);
     Graphics_drawString(g_sContext_p, (int8_t*)"Game", -1, 45, 5, true);
 
+    // Draws the player
+
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
     Graphics_fillCircle(g_sContext_p, app_p->player.x, app_p->player.y, PLAYER_SIZE);
+
+    // Draws the enemy
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_RED);
+    Graphics_fillRectangle(g_sContext_p, &(Graphics_Rectangle){
+        app_p->enemy.x - ENEMY_SIZE/2,
+        app_p->enemy.y - ENEMY_SIZE/2,
+        app_p->enemy.x + ENEMY_SIZE/2,
+        app_p->enemy.y + ENEMY_SIZE/2
+    });
 
     // Draws a bullet if active
 

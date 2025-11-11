@@ -8,6 +8,8 @@
  *       - Title Screen
  *       - Auto transition after 3 seconds
  *       - Cursor Movement with wrapping
+ *       - Added a Player on Screen
+ *       - Added enemy on Screen
  *
  */
 
@@ -47,6 +49,14 @@ struct _Player {
 };
 typedef struct _Player Player;
 
+// Enemy Struct
+struct _Enemy {
+    int x;
+    int y;
+    int health;
+};
+typedef struct _Enemy Enemy;
+
 
 // Struct showing what is show on the screen
 struct _Application {
@@ -60,6 +70,7 @@ struct _Application {
 
     Player player;
     int gameTime;
+    Enemy enemy;
 };
 typedef struct _Application Application;
 
