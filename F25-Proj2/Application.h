@@ -39,6 +39,7 @@ struct _Bullet {
     int x;
     int y;
     bool active;
+    int patternID;
 };
 typedef struct _Bullet Bullet;
 

@@ -474,8 +474,8 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
 }
 
 
-// ADD THIS ENTIRE FUNCTION:
-// Initialize enemy bullet system
+
+// Initializes the enemy bullet system
 void initEnemyBullets(EnemyBulletSystem* system) {
     int i;
     for (i = 0; i < MAX_ENEMY_BULLETS; i++) {
@@ -492,62 +492,62 @@ void initEnemyBullets(EnemyBulletSystem* system) {
     SWTimer_start(&system->spawnTimer);
 }
 
-// ADD THIS ENTIRE FUNCTION:
-// Spawn a new enemy bullet
+
+// Spawns a new enemy bullet
+
 void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy) {
-    // Find an inactive bullet slot
     int i;
     for (i = 0; i < MAX_ENEMY_BULLETS; i++) {
         if (!system->bullets[i].active) {
             system->bullets[i].active = true;
+            system->bullets[i].patternID = system->currentPattern;
 
-            // Pattern 0: Vertical (straight down from enemy)
+            // Vertical pattern
             if (system->currentPattern == 0) {
                 system->bullets[i].x = enemy->x;
                 system->bullets[i].y = enemy->y + ENEMY_SIZE;
             }
-            // Pattern 1: Horizontal (spawn from left side)
+            // Horizontal pattern
             else {
                 system->bullets[i].x = MARGIN_LEFT;
-                system->bullets[i].y = enemy->y + 20 + (i * 10);  // Spread across screen
+                system->bullets[i].y = enemy->y + 20 + (i * 10);
             }
 
-            break;  // Only spawn one bullet
+            break;
         }
     }
 }
 
-// ADD THIS ENTIRE FUNCTION:
-// Update all enemy bullets
+// Updates all enemy bullets
+
 void updateEnemyBullets(Application* app) {
-    // Check if it's time to switch patterns
+    // Checks if ready to switch patterns
     if (SWTimer_expired(&app->enemyBullets.patternTimer)) {
-        // Switch pattern (0 -> 1 or 1 -> 0)
         app->enemyBullets.currentPattern = (app->enemyBullets.currentPattern + 1) % 2;
         SWTimer_start(&app->enemyBullets.patternTimer);
     }
 
-    // Check if it's time to spawn a new bullet
+    // Checks if it is time to spawn a new bullet
     if (SWTimer_expired(&app->enemyBullets.spawnTimer)) {
         spawnEnemyBullet(&app->enemyBullets, &app->enemy);
         SWTimer_start(&app->enemyBullets.spawnTimer);
     }
 
-    // Update all active bullets
+    // Updates  all active bullets
     int i;
     for (i = 0; i < MAX_ENEMY_BULLETS; i++) {
         if (app->enemyBullets.bullets[i].active) {
 
-            // Pattern 0: Move down
-            if (app->enemyBullets.currentPattern == 0) {
+            // Pattern 0: Vertical
+            if (app->enemyBullets.bullets[i].patternID == 0) {
                 app->enemyBullets.bullets[i].y += ENEMY_BULLET_SPEED;
             }
-            // Pattern 1: Move right
+            // Pattern 1: Horizontal
             else {
                 app->enemyBullets.bullets[i].x += ENEMY_BULLET_SPEED;
             }
 
-            // Deactivate if off screen
+            // Deactivates bullet if off the screen
             if (app->enemyBullets.bullets[i].y > SCREEN_HEIGHT ||
                 app->enemyBullets.bullets[i].x > SCREEN_WIDTH) {
                 app->enemyBullets.bullets[i].active = false;
