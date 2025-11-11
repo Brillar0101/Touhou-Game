@@ -403,5 +403,15 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
     sprintf(healthStr, "%d", app_p->player.health);
     Graphics_drawString(g_sContext_p, (int8_t*)healthStr, -1, 8, 108, true);
 
+    // Draws enemy's health
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_RED);
+    Graphics_drawCircle(g_sContext_p, 113, 15, 12);
+
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
+    char enemyHealthStr[10];
+    sprintf(enemyHealthStr, "%d", app_p->enemy.health);
+    Graphics_drawString(g_sContext_p, (int8_t*)enemyHealthStr, -1, 100, 10, true);
+
+    // Resets the color
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
 }
