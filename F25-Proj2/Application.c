@@ -511,12 +511,12 @@ void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy) {
             system->bullets[i].active = true;
             system->bullets[i].patternID = system->currentPattern;
 
-            // Vertical pattern ID 0
+            // Vertical pattern
             if (system->currentPattern == 0) {
                 system->bullets[i].x = enemy->x;
                 system->bullets[i].y = enemy->y + ENEMY_SIZE;
             }
-            // Horizontal pattern ID 1
+            // Horizontal pattern
             else {
                 system->bullets[i].x = MARGIN_LEFT;
                 system->bullets[i].y = enemy->y + 20 + (i * 10);
