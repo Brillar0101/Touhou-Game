@@ -527,7 +527,7 @@ void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy) {
     }
 }
 
-// Updates all enemy bullets
+// Updates the enemy bullets
 
 void updateEnemyBullets(Application* app) {
     // Checks if ready to switch patterns
