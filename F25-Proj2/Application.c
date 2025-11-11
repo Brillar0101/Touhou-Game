@@ -443,15 +443,12 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
     });
 
     // Draws a bullet if active
-
     if (app_p->player.bullet.active) {
         Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_CYAN);
         Graphics_fillCircle(g_sContext_p, app_p->player.bullet.x,
                            app_p->player.bullet.y, BULLET_SIZE);
     }
-
     // Draws enemy's bullet
-
     int i;
     for (i = 0; i < MAX_ENEMY_BULLETS; i++) {
         if (app_p->enemyBullets.bullets[i].active) {
@@ -507,7 +504,6 @@ void initEnemyBullets(EnemyBulletSystem* system) {
 
 
 // Spawns a new enemy bullet
-
 void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy) {
     int i;
     for (i = 0; i < MAX_ENEMY_BULLETS; i++) {
@@ -515,12 +511,12 @@ void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy) {
             system->bullets[i].active = true;
             system->bullets[i].patternID = system->currentPattern;
 
-            // Vertical pattern
+            // Vertical pattern ID 0
             if (system->currentPattern == 0) {
                 system->bullets[i].x = enemy->x;
                 system->bullets[i].y = enemy->y + ENEMY_SIZE;
             }
-            // Horizontal pattern
+            // Horizontal pattern ID 1
             else {
                 system->bullets[i].x = MARGIN_LEFT;
                 system->bullets[i].y = enemy->y + 20 + (i * 10);
