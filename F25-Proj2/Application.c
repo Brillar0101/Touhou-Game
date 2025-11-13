@@ -69,6 +69,9 @@ Application Application_construct() {
     // Intializing a timer
     initEnemyBullets(&app.enemyBullets);
 
+    // Initialize game over variables
+    app.finalScore = 0;
+    app.playerWon = false;
 
     return app;
 }
@@ -248,9 +251,45 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
             //Updates enemy bullets
             updateEnemyBullets(app);
 
+            // Checks for game over conditions
+
+            if (app->player.health <= 0) {
+                // Game lost
+                app->playerWon = false;
+                app->finalScore = 0;
+                app->currentScreen = GAME_OVER_SCREEN;
+                app->firstCall = true;
+            }
+            else if (app->enemy.health <= 0) {
+                // Game won
+                app->playerWon = true;
+                // Calculates the score
+                app->finalScore = (app->gameTime / 100) + (app->player.health * 10);
+                app->currentScreen = GAME_OVER_SCREEN;
+                app->firstCall = true;
+            }
+
+
             // Redraw the screen again
             drawGameScreen(g_sContext_p, app);
         }
+
+        // Game of Screen Logic
+
+        else if (app->currentScreen == GAME_OVER_SCREEN) {
+
+            if (app->firstCall) {
+                drawGameOverScreen(g_sContext_p, app);
+                app->firstCall = false;
+            }
+
+            // JSB - Returns to Menu
+            if (Button_isTapped(&hal->boosterpackJS)) {
+                app->currentScreen = MENU_SCREEN;
+                app->firstCall = true;
+            }
+        }
+
 }
 
 
@@ -483,6 +522,35 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
 }
 
+// Draws the game over Screen
+void drawGameOverScreen(Graphics_Context* g_sContext_p, Application* app_p) {
+    Graphics_clearDisplay(g_sContext_p);
+    Graphics_setFont(g_sContext_p, &g_sFontCmtt12);
+
+    // Shows if player won or lost
+    if (app_p->playerWon) {
+        Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_GREEN);
+        Graphics_drawString(g_sContext_p, (int8_t*)"You Win!", -1, 35, 35, true);
+    } else {
+        Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_RED);
+        Graphics_drawString(g_sContext_p, (int8_t*)"You Lose", -1, 35, 35, true);
+    }
+
+    // Shows the score
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
+    char scoreStr[30];
+    sprintf(scoreStr, "Score: %d", app_p->finalScore);
+    Graphics_drawString(g_sContext_p, (int8_t*)scoreStr, -1, 30, 60, true);
+
+    // Shows the time
+    char timeStr[30];
+    sprintf(timeStr, "Time: %d sec", app_p->gameTime / 100);
+    Graphics_drawString(g_sContext_p, (int8_t*)timeStr, -1, 25, 75, true);
+
+    // Navigation instruction
+    Graphics_drawString(g_sContext_p, (int8_t*)"Press JSB to", -1, 20, 100, true);
+    Graphics_drawString(g_sContext_p, (int8_t*)"continue", -1, 35, 113, true);
+}
 
 
 // Initializes the enemy bullet system

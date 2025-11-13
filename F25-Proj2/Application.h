@@ -10,6 +10,7 @@
  *       - Cursor Movement with wrapping
  *       - Added a Player on Screen
  *       - Added enemy on Screen
+ *       - Added Game Over Screen
  *
  */
 
@@ -29,7 +30,8 @@ enum _ScreenState {
     MENU_SCREEN,
     INSTRUCTIONS_SCREEN,
     HIGH_SCORES_SCREEN,
-    GAME_SCREEN
+    GAME_SCREEN,
+    GAME_OVER_SCREEN
 
 };
 typedef enum _ScreenState ScreenState;
@@ -85,6 +87,9 @@ struct _Application {
     int gameTime;
     Enemy enemy;
     EnemyBulletSystem enemyBullets;
+
+    int finalScore;
+    bool playerWon;
 };
 typedef struct _Application Application;
 
