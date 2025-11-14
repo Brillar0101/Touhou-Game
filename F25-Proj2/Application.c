@@ -680,6 +680,7 @@ void updateEnemyBullets(Application* app) {
             }
             if (checkEnemyBulletPlayerCollision(&app->enemyBullets.bullets[i], &app->player)) {
                 // Hit player
+
                 app->player.health -= ENEMY_DAMAGE;
                 app->enemyBullets.bullets[i].active = false;
 
