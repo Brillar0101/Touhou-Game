@@ -7,6 +7,7 @@
 #include <Application.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "custom_images.h"
 
 // Constants for the game
 #define SCREEN_WIDTH 128
@@ -25,11 +26,19 @@
 #define PATTERN_SWITCH_TIME 5000
 #define BULLET_SPAWN_TIME 1000
 
+// Random enemy movements macros
 #define ENEMY_MOVE_SPEED 2
 #define ENEMY_DIRECTION_CHANGE_TIME 2000
 #define ENEMY_MIN_DIRECTION -1
 #define ENEMY_MAX_DIRECTION 1
 #define ENEMY_DIRECTION_RANGE 3
+
+// Power ups Macros
+#define POWERUP_SIZE 5
+#define POWERUP_FALL_SPEED 1
+#define POWERUP_HEALTH_BOOST 10
+#define POWERUP_SPAWN_TIME_MIN 8000
+#define POWERUP_SPAWN_TIME_MAX 12000
 
 // Set initial values
 Application Application_construct() {
@@ -84,6 +93,13 @@ Application Application_construct() {
     // Initialize game over variables
     app.finalScore = 0;
     app.playerWon = false;
+
+    // Initializing power up system
+    app.powerUp.active = false;
+    app.powerUp.x = 0;
+    app.powerUp.y = 0;
+    app.powerUpSpawnTimer = SWTimer_construct(POWERUP_SPAWN_TIME_MIN);
+    SWTimer_start(&app.powerUpSpawnTimer);
 
     return app;
 }
@@ -273,6 +289,47 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
                 app->enemy.directionX = ENEMY_MIN_DIRECTION;
             }
 
+            // Spawns power ups
+            if (SWTimer_expired(&app->powerUpSpawnTimer)) {
+                if (!app->powerUp.active) {
+                    // A new power up at a random position
+                    app->powerUp.active = true;
+                    app->powerUp.x = MARGIN_LEFT + (rand() % (SCREEN_WIDTH - MARGIN_LEFT - MARGIN_RIGHT));
+                    app->powerUp.y = 0;
+                }
+                // Random spawn time of power ups
+                int spawnTime = POWERUP_SPAWN_TIME_MIN + (rand() % (POWERUP_SPAWN_TIME_MAX - POWERUP_SPAWN_TIME_MIN));
+                app->powerUpSpawnTimer = SWTimer_construct(spawnTime);
+                SWTimer_start(&app->powerUpSpawnTimer);
+            }
+
+            // Updates power up positions
+            if (app->powerUp.active) {
+                app->powerUp.y += POWERUP_FALL_SPEED;
+
+                // Deactivates out of bounds
+                if (app->powerUp.y > SCREEN_HEIGHT) {
+                    app->powerUp.active = false;
+                }
+
+                // Checks a collision with a player
+                int dx = app->powerUp.x - app->player.x;
+                int dy = app->powerUp.y - app->player.y;
+                int distanceSquared = dx * dx + dy * dy;
+                int collectRange = POWERUP_SIZE + PLAYER_SIZE;
+
+                if (distanceSquared < collectRange * collectRange) {
+                    app->player.health += POWERUP_HEALTH_BOOST;
+
+                    // Ensures does not exceed maximum health
+                    if (app->player.health > PLAYER_STARTING_HEALTH) {
+                        app->player.health = PLAYER_STARTING_HEALTH;
+                    }
+
+                    app->powerUp.active = false;
+                }
+            }
+
             //Updates enemy bullets
             updateEnemyBullets(app);
 
@@ -345,6 +402,13 @@ void initializeGame(Application* app) {
     app->enemy.directionX = ENEMY_MAX_DIRECTION;
     app->enemy.moveTimer = SWTimer_construct(ENEMY_DIRECTION_CHANGE_TIME);
     SWTimer_start(&app->enemy.moveTimer);
+
+    // Resets power up
+    app->powerUp.active = false;
+    app->powerUp.x = 0;
+    app->powerUp.y = 0;
+    app->powerUpSpawnTimer = SWTimer_construct(POWERUP_SPAWN_TIME_MIN);
+    SWTimer_start(&app->powerUpSpawnTimer);
 
     initEnemyBullets(&app->enemyBullets);
 
@@ -503,17 +567,29 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
 
     // Draws the player
 
-    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
-    Graphics_fillCircle(g_sContext_p, app_p->player.x, app_p->player.y, PLAYER_SIZE);
+//    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
+//    Graphics_fillCircle(g_sContext_p, app_p->player.x, app_p->player.y, PLAYER_SIZE);
+
+    // Draws player with a custom image
+    Graphics_drawImage(g_sContext_p, &player_ship_image,
+                       app_p->player.x - (PLAYER_IMAGE_WIDTH / 2),
+                       app_p->player.y - (PLAYER_IMAGE_HEIGHT / 2));
+
 
     // Draws the enemy
-    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_RED);
-    Graphics_fillRectangle(g_sContext_p, &(Graphics_Rectangle){
-        app_p->enemy.x - ENEMY_SIZE/2,
-        app_p->enemy.y - ENEMY_SIZE/2,
-        app_p->enemy.x + ENEMY_SIZE/2,
-        app_p->enemy.y + ENEMY_SIZE/2
-    });
+//    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_RED);
+//    Graphics_fillRectangle(g_sContext_p, &(Graphics_Rectangle){
+//        app_p->enemy.x - ENEMY_SIZE/2,
+//        app_p->enemy.y - ENEMY_SIZE/2,
+//        app_p->enemy.x + ENEMY_SIZE/2,
+//        app_p->enemy.y + ENEMY_SIZE/2
+//    });
+
+    //Draws enemy with custom image
+    Graphics_drawImage(g_sContext_p, &enemy_alien_image,
+                       app_p->enemy.x - (ENEMY_IMAGE_WIDTH / 2),
+                       app_p->enemy.y - (ENEMY_IMAGE_HEIGHT / 2));
+
 
     // Draws a bullet if active
     if (app_p->player.bullet.active) {
@@ -587,6 +663,21 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
     char enemyHealthStr[10];
     sprintf(enemyHealthStr, "%d", app_p->enemy.health);
     Graphics_drawString(g_sContext_p, (int8_t*)enemyHealthStr, -1, 90, 3, true);
+
+    // Draws power up in the Game Screen
+    if (app_p->powerUp.active) {
+        Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_GREEN);
+        Graphics_fillCircle(g_sContext_p,
+                           app_p->powerUp.x,
+                           app_p->powerUp.y,
+                           POWERUP_SIZE);
+
+        Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
+        Graphics_drawCircle(g_sContext_p,
+                           app_p->powerUp.x,
+                           app_p->powerUp.y,
+                           POWERUP_SIZE);
+    }
 }
 
 // Draws the game over Screen
@@ -618,6 +709,8 @@ void drawGameOverScreen(Graphics_Context* g_sContext_p, Application* app_p) {
     Graphics_drawString(g_sContext_p, (int8_t*)"Press JSB to", -1, 20, 100, true);
     Graphics_drawString(g_sContext_p, (int8_t*)"continue", -1, 35, 113, true);
 }
+
+
 
 
 // Initializes the enemy bullet system

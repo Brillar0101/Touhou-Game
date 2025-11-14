@@ -79,6 +79,14 @@ struct _Enemy {
 };
 typedef struct _Enemy Enemy;
 
+// Power up Struct
+struct _PowerUp {
+    int x;
+    int y;
+    bool active;
+};
+typedef struct _PowerUp PowerUp;
+
 
 // Struct showing what is show on the screen
 struct _Application {
@@ -97,6 +105,9 @@ struct _Application {
 
     int finalScore;
     bool playerWon;
+
+    PowerUp powerUp;
+    SWTimer powerUpSpawnTimer;
 };
 typedef struct _Application Application;
 
