@@ -15,6 +15,7 @@
 #include <HAL/Timer.h>
 #include <HAL/UART.h>
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include <HAL/Joystick.h>
 
 /**============================================================================
  * The main HAL struct. This struct encapsulates all of the other input structs
@@ -51,6 +52,9 @@ struct _HAL {
   Button boosterpackS1;
   Button boosterpackS2;
   Button boosterpackJS;
+
+  // Joystick X and Y
+  Joystick joystick;
 
   // UART - Construct a new UART instance
   UART uart;

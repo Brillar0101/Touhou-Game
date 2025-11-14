@@ -13,11 +13,11 @@
 #define MARGIN_LEFT 20
 #define MARGIN_RIGHT 20
 #define PLAYER_SIZE 8
-#define PLAYER_STARTING_HEALTH 100
+#define PLAYER_STARTING_HEALTH 25
 #define BULLET_SIZE 2
 #define BULLET_SPEED 3
 #define ENEMY_SIZE 10
-#define ENEMY_STARTING_HEALTH 500
+#define ENEMY_STARTING_HEALTH 25
 #define PLAYER_DAMAGE 5
 #define ENEMY_DAMAGE 5
 #define ENEMY_BULLET_SPEED 2
@@ -200,16 +200,13 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
                 app->firstCall = false;
             }
 
+
             //Increment game time
             app->gameTime++;
 
-            // Movement with buttons only
-            int joystickX = 0;
-            int joystickY = 0;
-
-            if (Button_isPressed(&hal->boosterpackS2)) {
-                joystickY = 1;
-            }
+            // Using Joystick for directions
+            int joystickX = Joystick_getXDirection(&hal->joystick);
+            int joystickY = Joystick_getYDirection(&hal->joystick);
 
             // Updating the position of the player
             if (joystickX != 0 || joystickY != 0) {
@@ -265,6 +262,10 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
                 app->playerWon = true;
                 // Calculates the score
                 app->finalScore = (app->gameTime / 100) + (app->player.health * 10);
+
+                // Saves the score to high score
+                updateHighScores(app, app->finalScore);
+
                 app->currentScreen = GAME_OVER_SCREEN;
                 app->firstCall = true;
             }
@@ -274,7 +275,7 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
             drawGameScreen(g_sContext_p, app);
         }
 
-        // Game of Screen Logic
+        // Game over Logic
 
         else if (app->currentScreen == GAME_OVER_SCREEN) {
 
@@ -662,4 +663,28 @@ bool checkEnemyBulletPlayerCollision(Bullet* bullet, Player* player) {
     int hitRange = BULLET_SIZE + PLAYER_SIZE;
 
     return (distanceSquared < hitRange * hitRange);
+}
+
+// Updates the high score
+void updateHighScores(Application* app_p, int newScore) {
+    int i, j;
+    int insertPosition = -1;
+
+    // Checks the order of the score
+    for (i = 0; i < 5; i++) {
+        if (newScore > app_p->highScores[i]) {
+            insertPosition = i;
+            break;
+        }
+    }
+    // Does not add the score if it did not make the top 5
+    if (insertPosition == -1) {
+        return;
+    }
+    for (j = 4; j > insertPosition; j--) {
+        app_p->highScores[j] = app_p->highScores[j - 1];
+    }
+
+    // Adds a new score
+    app_p->highScores[insertPosition] = newScore;
 }

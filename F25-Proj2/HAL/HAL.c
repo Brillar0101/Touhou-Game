@@ -50,6 +50,8 @@ HAL HAL_construct() {
   hal.boosterpackJS = Button_construct(BOOSTERPACK_JS_PORT,
                                        BOOSTERPACK_JS_PIN);  // Joystick Button
 
+  hal.joystick = Joystick_construct();
+
   // Construct the UART module inside of this HAL struct
   hal.uart = UART_construct(USB_UART_INSTANCE, USB_UART_PORT, USB_UART_PINS);
 
@@ -82,6 +84,8 @@ void HAL_refresh(HAL* hal) {
   Button_refresh(&hal->boosterpackS1);
   Button_refresh(&hal->boosterpackS2);
   Button_refresh(&hal->boosterpackJS);
+
+  Joystick_refresh(&hal->joystick);
 
   // Not real TODO: No need to add anything for UART
 }

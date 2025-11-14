@@ -11,6 +11,7 @@
  *       - Added a Player on Screen
  *       - Added enemy on Screen
  *       - Added Game Over Screen
+ *       - Saving the High Score
  *
  */
 
