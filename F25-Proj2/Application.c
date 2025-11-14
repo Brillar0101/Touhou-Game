@@ -489,11 +489,35 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
         Graphics_fillCircle(g_sContext_p, app_p->player.bullet.x,
                            app_p->player.bullet.y, BULLET_SIZE);
     }
-    // Draws enemy's bullet
+    // Draws the enemy's bullets
     int i;
     for (i = 0; i < MAX_ENEMY_BULLETS; i++) {
         if (app_p->enemyBullets.bullets[i].active) {
-            Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_RED);
+            // Selects a color for a bullet pattern
+            switch (app_p->enemyBullets.bullets[i].patternID) {
+                case 0:
+                    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_RED);
+                    break;
+                case 1:
+                    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_YELLOW);
+                    break;
+                case 2:
+                    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_ORANGE);
+                    break;
+                case 3:
+                    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_MAGENTA);
+                    break;
+                case 4:
+                    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_PURPLE);
+                    break;
+                case 5:
+                    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_GREEN);
+                    break;
+                default:
+                    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_RED);
+                    break;
+            }
+
             Graphics_fillCircle(g_sContext_p,
                                app_p->enemyBullets.bullets[i].x,
                                app_p->enemyBullets.bullets[i].y,
