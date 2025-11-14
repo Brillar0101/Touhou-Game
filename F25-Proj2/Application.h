@@ -12,6 +12,8 @@
  *       - Added enemy on Screen
  *       - Added Game Over Screen
  *       - Saving the High Score
+ *       - Using Joystick for Player Movement
+ *       - Three Bullet Patterns implemented
  *
  */
 

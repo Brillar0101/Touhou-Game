@@ -586,9 +586,15 @@ void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy) {
                 system->bullets[i].y = enemy->y + ENEMY_SIZE;
             }
             // Horizontal pattern
-            else {
+            else if (system->currentPattern == 1) {
                 system->bullets[i].x = MARGIN_LEFT;
                 system->bullets[i].y = enemy->y + 20 + (i * 10);
+            }
+
+            // Diagonally Pattern top left to bottom right
+            else if(system->currentPattern == 2){
+                system->bullets[i].x = MARGIN_LEFT + (i * 5);
+                system->bullets[i].y = enemy->y;
             }
 
             break;
@@ -601,7 +607,7 @@ void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy) {
 void updateEnemyBullets(Application* app) {
     // Checks if ready to switch patterns
     if (SWTimer_expired(&app->enemyBullets.patternTimer)) {
-        app->enemyBullets.currentPattern = (app->enemyBullets.currentPattern + 1) % 2;
+        app->enemyBullets.currentPattern = (app->enemyBullets.currentPattern + 1) % 3;
         SWTimer_start(&app->enemyBullets.patternTimer);
     }
 
@@ -621,8 +627,13 @@ void updateEnemyBullets(Application* app) {
                 app->enemyBullets.bullets[i].y += ENEMY_BULLET_SPEED;
             }
             // Pattern 1: Horizontal
-            else {
+            else if (app->enemyBullets.bullets[i].patternID == 1){
                 app->enemyBullets.bullets[i].x += ENEMY_BULLET_SPEED;
+            }
+            // Pattern 2 : Diagonally down right
+            else if (app->enemyBullets.bullets[i].patternID == 2){
+                app->enemyBullets.bullets[i].x += ENEMY_BULLET_SPEED;
+                app->enemyBullets.bullets[i].y += ENEMY_BULLET_SPEED;
             }
 
             if (checkEnemyBulletPlayerCollision(&app->enemyBullets.bullets[i], &app->player)) {
