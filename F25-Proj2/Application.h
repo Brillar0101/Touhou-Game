@@ -16,6 +16,7 @@
  *       - Three Bullet Patterns implemented
  *       - Different colored bullets
  *       - Use of energy bars
+ *       - Added custom images
  *
  */
 
@@ -26,6 +27,7 @@
 #include <HAL/HAL.h>
 #include <ti/grlib/grlib.h>
 #include <HAL/Timer.h>
+
 
 #define MAX_ENEMY_BULLETS 10
 
