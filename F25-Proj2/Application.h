@@ -14,6 +14,8 @@
  *       - Saving the High Score
  *       - Using Joystick for Player Movement
  *       - Three Bullet Patterns implemented
+ *       - Different colored bullets
+ *       - Use of energy bars
  *
  */
 
@@ -72,6 +74,8 @@ struct _Enemy {
     int x;
     int y;
     int health;
+    int directionX;
+    SWTimer moveTimer;
 };
 typedef struct _Enemy Enemy;
 
@@ -79,11 +83,11 @@ typedef struct _Enemy Enemy;
 // Struct showing what is show on the screen
 struct _Application {
 
-    ScreenState currentScreen;   // Which screen user is on
-    bool firstCall;              // First time drawing on screen ?
-    SWTimer titleTimer;          // 3 sec timer
-    bool timerStarted;           // Timer started yet ?
-    int menuSelection;           // Menu selection
+    ScreenState currentScreen;
+    bool firstCall;
+    SWTimer titleTimer;
+    bool timerStarted;
+    int menuSelection;
     int highScores[5];
 
     Player player;

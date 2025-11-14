@@ -25,6 +25,12 @@
 #define PATTERN_SWITCH_TIME 5000
 #define BULLET_SPAWN_TIME 1000
 
+#define ENEMY_MOVE_SPEED 2
+#define ENEMY_DIRECTION_CHANGE_TIME 2000
+#define ENEMY_MIN_DIRECTION -1
+#define ENEMY_MAX_DIRECTION 1
+#define ENEMY_DIRECTION_RANGE 3
+
 // Set initial values
 Application Application_construct() {
     Application app;
@@ -63,6 +69,11 @@ Application Application_construct() {
     app.enemy.x = SCREEN_WIDTH / 2;
     app.enemy.y = 25;
     app.enemy.health = ENEMY_STARTING_HEALTH;
+
+    // Initializing enemy movements
+    app.enemy.directionX = ENEMY_MAX_DIRECTION;
+    app.enemy.moveTimer = SWTimer_construct(ENEMY_DIRECTION_CHANGE_TIME);
+    SWTimer_start(&app.enemy.moveTimer);
 
     // Initializing enemy bullet system
     initEnemyBullets(&app.enemyBullets);
@@ -246,6 +257,22 @@ void Application_loop(Application* app, HAL* hal, Graphics_Context* g_sContext_p
                 }
             }
 
+            // Updates the enemy's movement
+            if (SWTimer_expired(&app->enemy.moveTimer)) {
+                app->enemy.directionX = (rand() % ENEMY_DIRECTION_RANGE) + ENEMY_MIN_DIRECTION;  // Picks a random x-axis direction
+                SWTimer_start(&app->enemy.moveTimer);
+            }
+            app->enemy.x += app->enemy.directionX * ENEMY_MOVE_SPEED;  // Moves enemy
+
+            if (app->enemy.x < MARGIN_LEFT + ENEMY_SIZE) {        // Keeps enemy within bounds
+                app->enemy.x = MARGIN_LEFT + ENEMY_SIZE;
+                app->enemy.directionX = ENEMY_MAX_DIRECTION;
+            }
+            if (app->enemy.x > SCREEN_WIDTH - MARGIN_RIGHT - ENEMY_SIZE) {
+                app->enemy.x = SCREEN_WIDTH - MARGIN_RIGHT - ENEMY_SIZE;
+                app->enemy.directionX = ENEMY_MIN_DIRECTION;
+            }
+
             //Updates enemy bullets
             updateEnemyBullets(app);
 
@@ -313,6 +340,11 @@ void initializeGame(Application* app) {
     app->enemy.x = SCREEN_WIDTH / 2;
     app->enemy.y = 25;
     app->enemy.health = ENEMY_STARTING_HEALTH;
+
+    // Resets enemy movements
+    app->enemy.directionX = ENEMY_MAX_DIRECTION;
+    app->enemy.moveTimer = SWTimer_construct(ENEMY_DIRECTION_CHANGE_TIME);
+    SWTimer_start(&app->enemy.moveTimer);
 
     initEnemyBullets(&app->enemyBullets);
 
@@ -525,27 +557,36 @@ void drawGameScreen(Graphics_Context* g_sContext_p, Application* app_p) {
         }
     }
 
-    // Draws a health circle
-
+    // Draws health bars
+    // Player health bar
+    int playerHealthWidth = (app_p->player.health * 45) / PLAYER_STARTING_HEALTH;
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_BLUE);
-    Graphics_drawCircle(g_sContext_p, 15, 113, 12);
+    Graphics_fillRectangle(g_sContext_p, &(Graphics_Rectangle){5, 115, 5 + playerHealthWidth, 120});
 
-    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);     // for border
+    Graphics_drawRectangle(g_sContext_p, &(Graphics_Rectangle){5, 115, 50, 120});
+
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);     // for health text
     char healthStr[10];
     sprintf(healthStr, "%d", app_p->player.health);
-    Graphics_drawString(g_sContext_p, (int8_t*)healthStr, -1, 8, 108, true);
+    Graphics_drawString(g_sContext_p, (int8_t*)healthStr, -1, 15, 110, true);
 
-    // Draws enemy's health
+
+    // Enemy health bar
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_GRAY);
+    Graphics_fillRectangle(g_sContext_p, &(Graphics_Rectangle){78, 8, 123, 13});
+
+    int enemyHealthWidth = (app_p->enemy.health * 45) / ENEMY_STARTING_HEALTH;
     Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_RED);
-    Graphics_drawCircle(g_sContext_p, 113, 15, 12);
+    Graphics_fillRectangle(g_sContext_p, &(Graphics_Rectangle){78, 8, 78 + enemyHealthWidth, 13});
 
-    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);   // for border
+    Graphics_drawRectangle(g_sContext_p, &(Graphics_Rectangle){78, 8, 123, 13});
+
+    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);   // for health text
     char enemyHealthStr[10];
     sprintf(enemyHealthStr, "%d", app_p->enemy.health);
-    Graphics_drawString(g_sContext_p, (int8_t*)enemyHealthStr, -1, 100, 10, true);
-
-    // Resets the color
-    Graphics_setForegroundColor(g_sContext_p, GRAPHICS_COLOR_WHITE);
+    Graphics_drawString(g_sContext_p, (int8_t*)enemyHealthStr, -1, 90, 3, true);
 }
 
 // Draws the game over Screen
