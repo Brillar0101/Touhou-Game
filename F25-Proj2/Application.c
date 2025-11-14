@@ -6,6 +6,7 @@
 
 #include <Application.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Constants for the game
 #define SCREEN_WIDTH 128
@@ -596,6 +597,30 @@ void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy) {
                 system->bullets[i].x = MARGIN_LEFT + (i * 5);
                 system->bullets[i].y = enemy->y;
             }
+            // Pattern 3: Diagonally top right to bottom left
+            else if (system->currentPattern == 3) {
+                system->bullets[i].x = SCREEN_WIDTH - MARGIN_RIGHT - (i * 5);
+                system->bullets[i].y = enemy->y;
+            }
+            // Pattern 4: Dual Horizontally from both sides
+            else if (system->currentPattern == 4) {
+                if (i % 2 == 0) {
+                    // Even number of bullets from left
+                    system->bullets[i].x = MARGIN_LEFT;
+                } else {
+                    // Odd number of bullets from right
+                    system->bullets[i].x = SCREEN_WIDTH - MARGIN_RIGHT;
+                }
+                system->bullets[i].y = enemy->y + 15 + (i * 8);
+            }
+            // Pattern 5 : Very random vertical drops
+            else if (system->currentPattern == 5) {
+                int safeWidth = SCREEN_WIDTH - MARGIN_LEFT - MARGIN_RIGHT;
+                system->bullets[i].x = MARGIN_LEFT + (rand() % safeWidth);
+                system->bullets[i].y = enemy->y;
+            }
+
+
 
             break;
         }
@@ -605,9 +630,9 @@ void spawnEnemyBullet(EnemyBulletSystem* system, Enemy* enemy) {
 // Updates the enemy bullets
 
 void updateEnemyBullets(Application* app) {
-    // Checks if ready to switch patterns
     if (SWTimer_expired(&app->enemyBullets.patternTimer)) {
-        app->enemyBullets.currentPattern = (app->enemyBullets.currentPattern + 1) % 3;
+        // Picks random patterns of bullets
+        app->enemyBullets.currentPattern = rand() % 6;
         SWTimer_start(&app->enemyBullets.patternTimer);
     }
 
@@ -630,12 +655,29 @@ void updateEnemyBullets(Application* app) {
             else if (app->enemyBullets.bullets[i].patternID == 1){
                 app->enemyBullets.bullets[i].x += ENEMY_BULLET_SPEED;
             }
-            // Pattern 2 : Diagonally down right
+            // Pattern 2 : Diagonally top left  to bottom right
             else if (app->enemyBullets.bullets[i].patternID == 2){
                 app->enemyBullets.bullets[i].x += ENEMY_BULLET_SPEED;
                 app->enemyBullets.bullets[i].y += ENEMY_BULLET_SPEED;
             }
-
+            // Diagonally pattern from top right to down left
+            else if (app->enemyBullets.bullets[i].patternID == 3) {
+                app->enemyBullets.bullets[i].x -= ENEMY_BULLET_SPEED;
+                app->enemyBullets.bullets[i].y += ENEMY_BULLET_SPEED;
+            }
+            // Dual Horizontally
+            else if (app->enemyBullets.bullets[i].patternID == 4) {
+                if (app->enemyBullets.bullets[i].x < SCREEN_WIDTH / 2) {
+                    app->enemyBullets.bullets[i].x += ENEMY_BULLET_SPEED;
+                } else {
+                    app->enemyBullets.bullets[i].x -= ENEMY_BULLET_SPEED;
+                }
+                app->enemyBullets.bullets[i].y += ENEMY_BULLET_SPEED;
+            }
+           // Random vertical drops
+            else if (app->enemyBullets.bullets[i].patternID == 5) {
+                app->enemyBullets.bullets[i].y += ENEMY_BULLET_SPEED;
+            }
             if (checkEnemyBulletPlayerCollision(&app->enemyBullets.bullets[i], &app->player)) {
                 // Hit player
                 app->player.health -= ENEMY_DAMAGE;
@@ -649,7 +691,8 @@ void updateEnemyBullets(Application* app) {
 
             // Deactivates bullet if off the screen
             if (app->enemyBullets.bullets[i].y > SCREEN_HEIGHT ||
-                app->enemyBullets.bullets[i].x > SCREEN_WIDTH) {
+                app->enemyBullets.bullets[i].x > SCREEN_WIDTH ||
+                app->enemyBullets.bullets[i].x < 0) {
                 app->enemyBullets.bullets[i].active = false;
             }
         }
